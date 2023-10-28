@@ -65,9 +65,11 @@ function getResumeDetails() {
     return { ...details, specialization, educationCourses }
 }
 
-async function parse(url) {
+export default async function parse(position) {
+    const url = `https://spb.hh.ru/resumes/${position}`
+
     const browser = await puppeteer.launch({
-        headless: false
+        headless: true
     })
 
     const page = await browser.newPage()
@@ -106,8 +108,4 @@ async function parse(url) {
     return resumes
 }
 
-const url = 'https://spb.hh.ru/resumes/upravlyayushiy'
-
-const resumes = await parse(url)
-console.log(resumes)
 // await updateDatabase(resumes)
