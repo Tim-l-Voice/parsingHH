@@ -104,7 +104,7 @@ export default async function parse(position) {
         resumes.push(...pageResumes)
     }
 
-    for (let resumeIndex = 0; resumeIndex < resumes.length; resumeIndex++) {
+    for (let resumeIndex = 0; resumeIndex < 2; resumes.length; resumeIndex++) {
         await page.goto(`${resumes[resumeIndex].url}`, {
             waitUntil: 'networkidle0',
             timeout: 0
