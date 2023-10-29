@@ -95,7 +95,7 @@ export default async function parse(position) {
 
     const resumes = []
 
-    for (let pageNumber = 0; pageNumber < 2; pageNumber++) {
+    for (let pageNumber = 0; pageNumber < 1; pageNumber++) {
         await page.goto(`${url}?page=${pageNumber}`, {
             waitUntil: 'networkidle0',
             timeout: 0
@@ -104,7 +104,7 @@ export default async function parse(position) {
         resumes.push(...pageResumes)
     }
 
-    for (let resumeIndex = 0; resumeIndex < 2; resumes.length; resumeIndex++) {
+    for (let resumeIndex = 0; resumeIndex < 2; resumeIndex++) {
         await page.goto(`${resumes[resumeIndex].url}`, {
             waitUntil: 'networkidle0',
             timeout: 0
