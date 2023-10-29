@@ -1,5 +1,6 @@
 import puppeteer from 'puppeteer';
 import { PrismaClient } from '@prisma/client'
+import 'dotenv/config'
 
 async function updateDatabase(data) {
     const prisma = new PrismaClient()
@@ -69,7 +70,19 @@ export default async function parse(position) {
     const url = `https://spb.hh.ru/resumes/${position}`
 
     const browser = await puppeteer.launch({
-        headless: true
+        headless: true,
+        ignoreDefaultArgs: ["--desable-extensions"],
+        exetubalePath:
+            process.env.NODE_ENV === "production"
+                ? process.env.PUPPETEER_EXECUTABLE_PATH
+                : puppeteer.executablePath(),
+        ignoreHTTPSErrors: true,
+        args: [
+            "--disable-setuid-sandbox",
+            "--no-sandbox",
+            "--single-process",
+            "--no-zygote",
+        ],
     })
 
     const page = await browser.newPage()
