@@ -8,20 +8,19 @@ app.post('/positions', async (req, res) => {
   const data = req.body
   const position = translitRusEng(data.position)
 
-  //   import('./parsing.mjs')
-  //     .then(async parsing => {
-  //       res.json({
-  //         'resumes': await parsing.default(position)
-  //       })
-  //     })
-  // })
-
-  import('./mock.mjs')
-    .then(parsing => {
+  import('./parsing.mjs')
+    .then(async parsing => {
       res.json({
-        'resumes': parsing.mock_resumes
+        'resumes': await parsing.default(position)
       })
     })
+
+  //   import('./mock.mjs')
+  //     .then(parsing => {
+  //       res.json({
+  //         'resumes': parsing.mock_resumes
+  //       })
+  //     })
 })
 
 app.listen(3000, () => {
