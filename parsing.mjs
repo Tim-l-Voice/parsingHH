@@ -95,7 +95,7 @@ export default async function parse(position) {
 
     const resumes = []
 
-    for (let pageNumber = 0; pageNumber < 1; pageNumber++) {
+    for (let pageNumber = 0; pageNumber < 2; pageNumber++) {
         await page.goto(`${url}?page=${pageNumber}`, {
             waitUntil: 'networkidle0',
             timeout: 0
