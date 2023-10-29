@@ -71,7 +71,7 @@ export default async function parse(position) {
 
     const browser = await puppeteer.launch({
         headless: true,
-        ignoreDefaultArgs: ["--desable-extensions"],
+        ignoreDefaultArgs: ["--disable-extensions"],
         exetubalePath:
             process.env.NODE_ENV === "production"
                 ? process.env.PUPPETEER_EXECUTABLE_PATH
@@ -80,7 +80,6 @@ export default async function parse(position) {
         args: [
             "--disable-setuid-sandbox",
             "--no-sandbox",
-            "--single-process",
             "--no-zygote",
         ],
     })
