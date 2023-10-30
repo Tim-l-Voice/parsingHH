@@ -15,15 +15,14 @@ app.post('/positions', async (req, res) => {
         "resumes": await parsing.default(position)
       })
     })
-
-  // import('./mock.mjs')
-  //   .then(parsing => {
-  //     res.json({
-  //       "resumes": parsing.mock_resumes
-  //     })
-  //   })
-
 })
+
+// import('./mock.mjs')
+//   .then(parsing => {
+//     res.json({
+//       "resumes": parsing.mock_resumes
+//     })
+//   })
 
 app.listen(3000, () => {
   console.log(`App listening on 3000`)
