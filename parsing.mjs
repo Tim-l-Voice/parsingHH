@@ -78,7 +78,8 @@ export default async function parse(position) {
             "--disable-setuid-sandbox",
             "--no-sandbox",
             "--no-zygote",
-            "--disable-features=site-per-process"
+            "--disable-features=site-per-process",
+            "--single-process"
         ]
     })
 
@@ -92,7 +93,7 @@ export default async function parse(position) {
 
     const resumes = []
 
-    for (let pageNumber = 0; pageNumber < 10; pageNumber++) {
+    for (let pageNumber = 0; pageNumber < 3; pageNumber++) {
         await page.goto(`${url}?page=${pageNumber}`, {
             waitUntil: 'networkidle0',
             timeout: 0
@@ -101,7 +102,7 @@ export default async function parse(position) {
         resumes.push(...pageResumes)
     }
 
-    for (let resumeIndex = 0; resumeIndex < resumes.length; resumeIndex++) {
+    for (let resumeIndex = 0; resumeIndex < 10; resumeIndex++) {
         await page.goto(`${resumes[resumeIndex].url}`, {
             waitUntil: 'networkidle0',
             timeout: 0
