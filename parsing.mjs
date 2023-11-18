@@ -1,4 +1,6 @@
-import puppeteer from 'puppeteer'
+import * as utils from 'node:util'
+import puppeteer from 'puppeteer-extra'
+import StealthPlugin from 'puppeteer-extra-plugin-stealth'
 import 'dotenv/config'
 import { PrismaClient } from '@prisma/client'
 
@@ -66,57 +68,100 @@ function getResumeDetails() {
     return { ...details, specialization, educationCourses }
 }
 
+const delay = utils.promisify(setTimeout)
+
+async function retry(fn, retryDelay = 1000, retryNumber = 5) {
+    while (retryNumber > 0) {
+        try {
+            await fn()
+            return
+        } catch (e) {
+            retryNumber--
+            retryDelay *= 2
+            await delay(retryDelay)
+        }
+    }
+}
+
 export default async function parse(position) {
+    const resumes = []
     const url = `https://spb.hh.ru/resumes/${position}`
+
+    puppeteer.use(StealthPlugin())
 
     const browser = await puppeteer.launch({
         executablePath:
             process.env.NODE_ENV === "production"
                 ? process.env.PUPPETEER_EXECUTABLE_PATH
                 : puppeteer.executablePath(),
+        headless: 'new',
         args: [
-            "--disable-setuid-sandbox",
-            "--no-sandbox",
-            "--no-zygote",
-            "--disable-features=site-per-process",
-            "--single-process"
-        ]
+            '--allow-running-insecure-content',
+            '--autoplay-policy=user-gesture-required',
+            '--disable-component-update',
+            '--disable-domain-reliability',
+            '--disable-features=AudioServiceOutOfProcess,IsolateOrigins,site-per-process',
+            '--disable-print-preview',
+            '--disable-setuid-sandbox',
+            '--disable-site-isolation-trials',
+            '--disable-speech-api',
+            '--disable-web-security',
+            '--disk-cache-size=33554432',
+            '--enable-features=SharedArrayBuffer',
+            '--hide-scrollbars',
+            '--disable-gpu',
+            '--mute-audio',
+            '--no-default-browser-check',
+            '--no-pings',
+            '--no-sandbox',
+            '--no-zygote',
+            '--disable-extensions',
+        ],
+        defaultViewport: {
+            width: 800,
+            height: 900,
+            deviceScaleFactor: 1
+        }
     })
 
-    const page = await browser.newPage()
+    try {
+        const page = await browser.newPage()
 
-    await page.setViewport({
-        width: 800,
-        height: 900,
-        deviceScaleFactor: 1
-    })
+        for (let pageNumber = 0; pageNumber < 5; pageNumber++) {
+            await retry(async () => {
+                await page.goto(`${url}?page=${pageNumber}`, {
+                    waitUntil: 'networkidle2',
+                    timeout: 30000
+                })
+                const pageResumes = await page.evaluate(getResumes)
+                resumes.push(...pageResumes)
+            })
+        }
 
-    const resumes = []
+        console.log(resumes)
 
-    for (let pageNumber = 0; pageNumber < 1; pageNumber++) {
-        await page.goto(`${url}?page=${pageNumber}`, {
-            waitUntil: 'networkidle0',
-            timeout: 0
-        })
-        const pageResumes = await page.evaluate(getResumes)
-        resumes.push(...pageResumes)
-    }
+        for (let resumeIndex = 0; resumeIndex < resumes.length; resumeIndex++) {
+            await retry(async () => {
+                await page.goto(`${resumes[resumeIndex].url}`, {
+                    waitUntil: 'networkidle2',
+                    timeout: 30000
+                })
+            })
 
-    for (let resumeIndex = 0; resumeIndex < 10; resumeIndex++) {
-        await page.goto(`${resumes[resumeIndex].url}`, {
-            waitUntil: 'networkidle0',
-            timeout: 0
-        })
+            const details = await page.evaluate(getResumeDetails)
+            console.log(details)
 
-        const details = await page.evaluate(getResumeDetails)
-        console.log(details)
-
-        resumes[resumeIndex] = { ...resumes[resumeIndex], ...details }
+            resumes[resumeIndex] = { ...resumes[resumeIndex], ...details }
+        }
+    } catch (e) {
+        console.log(e)
+    } finally {
+        await browser.close()
+        return resumes
     }
 
     // console.log(resumes, resumes.length)
-    await browser.close()
-    return resumes
+
 }
 
 // await updateDatabase(resumes)
