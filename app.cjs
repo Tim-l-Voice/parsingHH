@@ -1,3 +1,4 @@
+const http = require('http')
 const express = require('express')
 const { translitRusEng } = require('./translit.cjs')
 
@@ -17,13 +18,15 @@ app.post('/positions', async (req, res) => {
     })
 })
 
-// import('./mock.mjs')
-//   .then(parsing => {
-//     res.json({
-//       "resumes": parsing.mock_resumes
-//     })
-//   })
+// app.listen(3000, () => {
+//   console.log(`App listening on 3000`)
+// })
 
-app.listen(3000, () => {
-  console.log(`App listening on 3000`)
-})
+const server = http.createServer(app)
+const timeout = 20 * 60 * 1000
+
+server.setTimeout(timeout)
+server.keepAliveTimeout = timeout
+server.headersTimeout = timeout
+
+server.listen(3000)

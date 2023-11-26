@@ -124,22 +124,27 @@ export default async function parse(position) {
         }
     })
 
-    try {
-        const page = await browser.newPage()
+    const page = await browser.newPage()
 
+    try {
         for (let pageNumber = 0; pageNumber < 5; pageNumber++) {
             await retry(async () => {
                 await page.goto(`${url}?page=${pageNumber}`, {
                     waitUntil: 'networkidle2',
                     timeout: 30000
                 })
+
                 const pageResumes = await page.evaluate(getResumes)
                 resumes.push(...pageResumes)
             })
         }
-
+    } catch (e) {
+        console.log(e)
+    } finally {
         console.log(resumes)
+    }
 
+    try {
         for (let resumeIndex = 0; resumeIndex < resumes.length; resumeIndex++) {
             await retry(async () => {
                 await page.goto(`${resumes[resumeIndex].url}`, {
@@ -159,9 +164,4 @@ export default async function parse(position) {
         await browser.close()
         return resumes
     }
-
-    // console.log(resumes, resumes.length)
-
 }
-
-// await updateDatabase(resumes)
