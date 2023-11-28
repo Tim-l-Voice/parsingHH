@@ -4,26 +4,30 @@ const { translitRusEng } = require('./translit.cjs')
 
 const app = express()
 
-app.use(express.json())
+app.use(express.json({limit: '10mb'}))
 
 app.post('/positions', async (req, res) => {
   const data = req.body
   const position = translitRusEng(data.position)
 
-  import('./parsing.mjs')
-    .then(async parsing => {
-      res.json({
-        "resumes": await parsing.default(position)
-      })
-    })
+  const parseModule = await import('./parsing/parse.mjs')
+  const resumes = await parseModule.default(position)
+  
+  res.json({
+    "resumes": resumes
+  })
+
+  // import('./mock.mjs')
+  //   .then(parsing => {
+  //     res.json({
+  //       "resumes": parsing.mock_resumes
+  //     })
+  //   })
+
 })
 
-// app.listen(3000, () => {
-//   console.log(`App listening on 3000`)
-// })
-
 const server = http.createServer(app)
-const timeout = 20 * 60 * 1000
+const timeout = 30 * 60 * 1000
 
 server.setTimeout(timeout)
 server.keepAliveTimeout = timeout
