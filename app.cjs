@@ -1,10 +1,12 @@
+const { writeFile } = require('node:fs/promises')
+
 const http = require('http')
 const express = require('express')
 const { translitRusEng } = require('./translit.cjs')
 
 const app = express()
 
-app.use(express.json({limit: '10mb'}))
+app.use(express.json({ limit: '10mb' }))
 
 app.post('/positions', async (req, res) => {
   const data = req.body
@@ -12,17 +14,12 @@ app.post('/positions', async (req, res) => {
 
   const parseModule = await import('./parsing/parse.mjs')
   const resumes = await parseModule.default(position)
-  
+
+  writeFile('resumes.json', JSON.stringify(resumes, null, 2))
+
   res.json({
     "resumes": resumes
   })
-
-  // import('./mock.mjs')
-  //   .then(parsing => {
-  //     res.json({
-  //       "resumes": parsing.mock_resumes
-  //     })
-  //   })
 
 })
 
